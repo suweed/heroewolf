@@ -1,0 +1,173 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  background: #0a0a0a;
+}
+
+/* ── HeroSection ───────────────────────────────────────────── */
+.hero-section {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: #0a0a0a;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.hero-text {
+  position: relative;
+  z-index: 10;
+  max-width: 80%;
+  padding: 0 60px;
+}
+
+.hero-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #dc2626;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+
+.hero-title {
+  font-size: clamp(38px, 5.2vw, 70px);
+  font-weight: 900;
+  line-height: 1.08;
+  color: #ffffff;
+  margin-bottom: 24px;
+}
+
+.hero-title-accent {
+  color: #dc2626;
+}
+
+.hero-description {
+  font-size: 15px;
+  line-height: 1.75;
+  color: #808080;
+  margin-bottom: 40px;
+  max-width: 520px;
+}
+
+.hero-description strong {
+  color: #cccccc;
+  font-weight: 600;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 52px;
+  flex-wrap: wrap;
+}
+
+.hero-btn-primary {
+  padding: 13px 28px;
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.hero-btn-secondary {
+  padding: 13px 28px;
+  background: transparent;
+  color: #dc2626;
+  border: 1.5px solid #dc2626;
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.hero-badges {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.hero-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #797777;
+  font-size: 12px;
+}
+
+.hero-badge-check {
+  color: #dc2626;
+}
+
+/* ── LightSphere ───────────────────────────────────────────── */
+.sphere-blob {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 560px;
+  height: 560px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(220, 38, 38, 1)    0%,
+    rgba(220, 38, 38, 0.97) 14%,
+    rgba(210, 35, 35, 0.85) 30%,
+    rgba(190, 25, 25, 0.60) 50%,
+    rgba(160, 15, 15, 0.28) 68%,
+    transparent             85%
+  );
+  filter: blur(21px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform;
+}
+
+.sphere-spark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform;
+}
+
+/* ── GridBackground ────────────────────────────────────────── */
+.grid-wrapper {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.grid-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
