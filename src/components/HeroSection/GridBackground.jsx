@@ -111,6 +111,7 @@ export default function GridBackground({ spherePosRef, circleRadius = 100 }) {
       <div ref={wrapperRef} className="grid-wrapper">
         <Canvas
           className="grid-canvas"
+          style={{ width: '100%', height: '100%', display: 'block' }}
           camera={{ position: [0, 0, 5], fov: 60 }}
           gl={{ antialias: true, alpha: true }}
         >
