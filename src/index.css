@@ -149,15 +149,15 @@ body,
   letter-spacing: 0.18em;
   color: #dc2626;
   text-transform: uppercase;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
 }
 
 .hero-title {
-  font-size: clamp(35px, 5.6vw, 80px);
+  font-size: clamp(35px, 4.6vw, 70px);
   font-weight: 700;
   line-height: 1.08;
   color: #ffffff;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
 }
 
 .hero-title-accent {
