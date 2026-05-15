@@ -27,8 +27,11 @@ function makeGridTexture() {
   return tex
 }
 
+const RADIUS_REST = 245
+const RADIUS_MOVE = 165
+
 const GRID_DEFAULTS = {
-  radius:      165,   // px — tamaño del círculo
+  radius:      245,   // px — tamaño del círculo (reposo)
   blurPx:       52,   // px — blur del overlay ahumado
   smokeDark:   0.73,  // 0-1 — oscuridad máxima en el centro
   transCenter: 0.48,  // 0-1 — opacidad del mask en el centro (menor = más transparente)
@@ -48,7 +51,7 @@ function GridMesh() {
   )
 }
 
-export default function GridBackground({ spherePosRef, circleRadius = 100 }) {
+export default function GridBackground({ spherePosRef, floatingRef, circleRadiusRest, circleRadiusMove }) {
   const wrapperRef = useRef()
   const overlayRef = useRef()
   const cfgRef     = useRef(GRID_DEFAULTS)
@@ -58,6 +61,7 @@ export default function GridBackground({ spherePosRef, circleRadius = 100 }) {
     let raf
     let t = 0
     let last = performance.now()
+    let currentRadius = circleRadiusRest ?? RADIUS_REST
 
     const loop = (now) => {
       const dt = Math.min((now - last) / 1000, 0.05)
@@ -66,7 +70,11 @@ export default function GridBackground({ spherePosRef, circleRadius = 100 }) {
 
       const { x, y } = spherePosRef.current
       const c  = cfgRef.current
-      const r  = c.radius
+      const restR = circleRadiusRest ?? RADIUS_REST
+      const moveR = circleRadiusMove ?? RADIUS_MOVE
+      const targetR = (floatingRef?.current !== false) ? restR : moveR
+      currentRadius += (targetR - currentRadius) * 0.06
+      const r = currentRadius
       const sp = c.morphSpeed
 
       if (wrapperRef.current) {
@@ -104,7 +112,7 @@ export default function GridBackground({ spherePosRef, circleRadius = 100 }) {
     }
     raf = requestAnimationFrame(loop)
     return () => cancelAnimationFrame(raf)
-  }, [spherePosRef])
+  }, [spherePosRef, floatingRef])
 
   return (
     <>

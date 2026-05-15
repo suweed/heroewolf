@@ -1,5 +1,5 @@
 const CLIENT_LOGOS = [
-  'Adobe', 'Liverpool', 'Falabella', 'BBVA', 'Cemex', 'Grupo Modelo',
+  'xxx', 'xxxxx', 'xxxxx', 'xxxx', 'xxxxx', 'xxxx xxxx',
 ]
 
 export default function ClientsSection() {

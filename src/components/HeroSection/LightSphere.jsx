@@ -1,7 +1,10 @@
 import { useRef, useEffect } from 'react'
 
+const SIZE_REST = 740
+const SIZE_MOVE = 560
+
 const DEFAULTS = {
-  size:           560,
+  size:           560, //740
   blur:           21,
   blendScreen:    true,
   blobAmp:        33,
@@ -65,7 +68,7 @@ function Toggle({ label, k, cfg, set }) {
   )
 }
 
-export default function LightSphere({ containerRef, spherePosRef }) {
+export default function LightSphere({ containerRef, spherePosRef, floatingRef }) {
   const divRef    = useRef()
   const sparkRefs  = [useRef(), useRef(), useRef(), useRef(), useRef()]
   const cfgRef     = useRef(DEFAULTS)
@@ -83,6 +86,7 @@ export default function LightSphere({ containerRef, spherePosRef }) {
       x: rest.x, y: rest.y,
       tx: rest.x, ty: rest.y,
       floating: true, t: 0, angle: 0,
+      currentSize: SIZE_REST,
     }
 
     const onMove = (e) => {
@@ -111,7 +115,10 @@ export default function LightSphere({ containerRef, spherePosRef }) {
       last = now
       state.t += dt
 
-      const HALF = c.size / 2
+      if (floatingRef) floatingRef.current = state.floating
+      const targetSize = state.floating ? SIZE_REST : SIZE_MOVE
+      state.currentSize += (targetSize - state.currentSize) * 0.06
+      const HALF = state.currentSize / 2
 
       const ease = state.floating ? 0.032 : 0.10
       state.x += (state.tx - state.x) * ease
@@ -138,8 +145,8 @@ export default function LightSphere({ containerRef, spherePosRef }) {
 
       if (divRef.current) {
         const el = divRef.current
-        el.style.width        = `${c.size}px`
-        el.style.height       = `${c.size}px`
+        el.style.width        = `${state.currentSize.toFixed(1)}px`
+        el.style.height       = `${state.currentSize.toFixed(1)}px`
         el.style.filter       = `blur(${c.blur}px)`
         el.style.mixBlendMode = c.blendScreen ? 'screen' : 'normal'
         el.style.transform    =

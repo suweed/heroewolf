@@ -9,19 +9,21 @@ const BADGES = [
   'Clientes en todo LATAM',
 ]
 
-const CIRCLE_RADIUS = 165   // radio del tracker circle
+const CIRCLE_RADIUS_REST = 185  // radio del tracker circle en reposo
+const CIRCLE_RADIUS_MOVE = 165  // radio del tracker circle en movimiento
 
 export default function HeroSection() {
   const containerRef = useRef()
   const spherePosRef = useRef({ x: 0, y: 0 })
+  const floatingRef  = useRef(true)
 
   return (
     <section ref={containerRef} className="hero-section">
       {/* ── LAYER 3: Esfera de luz roja ── */}
-      <LightSphere containerRef={containerRef} spherePosRef={spherePosRef} />
+      <LightSphere containerRef={containerRef} spherePosRef={spherePosRef} floatingRef={floatingRef} />
 
       {/* ── LAYER 2: Cuadrícula 3D ── */}
-      <GridBackground spherePosRef={spherePosRef} circleRadius={CIRCLE_RADIUS} />
+      <GridBackground spherePosRef={spherePosRef} floatingRef={floatingRef} circleRadiusRest={CIRCLE_RADIUS_REST} circleRadiusMove={CIRCLE_RADIUS_MOVE} />
 
       {/* ── LAYER 1: Texto ── */}
       <div className="hero-text">
