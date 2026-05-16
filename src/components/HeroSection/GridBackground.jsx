@@ -1,6 +1,20 @@
 import { useMemo, useRef, useEffect } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { Canvas, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
+
+// Altura visible (en unidades Three.js) equivalente a la perspectiva anterior:
+// 2 * tan(fov/2) * distancia = 2 * tan(30°) * 5 ≈ 5.774
+const ORTHO_TARGET_H = 2 * Math.tan(Math.PI / 6) * 5
+
+// Sincroniza el zoom de la cámara ortográfica con el tamaño del canvas
+function CameraSync() {
+  const { camera, size } = useThree()
+  useEffect(() => {
+    camera.zoom = size.height / ORTHO_TARGET_H
+    camera.updateProjectionMatrix()
+  }, [camera, size.height])
+  return null
+}
 
 function makeGridTexture() {
   const cellSize = 64
@@ -23,9 +37,10 @@ function makeGridTexture() {
   tex.magFilter = THREE.NearestFilter
   tex.minFilter = THREE.NearestFilter
   tex.generateMipmaps = false
-  tex.repeat.set(40, 25)
+  tex.repeat.set(30, 19)
   return tex
 }
+
 
 const RADIUS_REST = 245
 const RADIUS_MOVE = 165
@@ -46,12 +61,13 @@ function GridMesh() {
   return (
     <mesh>
       <planeGeometry args={[16, 10]} />
-      <meshBasicMaterial map={texture} transparent />
+      <meshBasicMaterial map={texture} transparent depthWrite={false} />
     </mesh>
   )
 }
 
-export default function GridBackground({ spherePosRef, floatingRef, circleRadiusRest, circleRadiusMove }) {
+
+export default function GridBackground({ spherePosRef, floatingRef, circleRadiusRest, circleRadiusMove, children }) {
   const wrapperRef = useRef()
   const overlayRef = useRef()
   const cfgRef     = useRef(GRID_DEFAULTS)
@@ -120,12 +136,38 @@ export default function GridBackground({ spherePosRef, floatingRef, circleRadius
         <Canvas
           className="grid-canvas"
           style={{ width: '100%', height: '100%', display: 'block' }}
-          camera={{ position: [0, 0, 5], fov: 60 }}
+          orthographic
+          camera={{ position: [0, 0, 5], zoom: 100, near: 0.1, far: 100 }}
+          onCreated={({ camera, size }) => {
+            camera.zoom = size.height / ORTHO_TARGET_H
+            camera.updateProjectionMatrix()
+          }}
           gl={{ antialias: true, alpha: true }}
         >
+          <CameraSync />
           <GridMesh />
         </Canvas>
       </div>
+
+      {/* Cubo en canvas separado: sin máscara, por encima de sphere y smoke overlay */}
+      {children && (
+        <div className="cube-wrapper">
+          <Canvas
+            shadows
+            style={{ width: '100%', height: '100%', display: 'block' }}
+            orthographic
+            camera={{ position: [0, 0, 5], zoom: 100, near: 0.1, far: 100 }}
+            onCreated={({ camera, size }) => {
+              camera.zoom = size.height / ORTHO_TARGET_H
+              camera.updateProjectionMatrix()
+            }}
+            gl={{ antialias: true, alpha: true }}
+          >
+            <CameraSync />
+            {children}
+          </Canvas>
+        </div>
+      )}
 
       <div ref={overlayRef} className="grid-overlay" />
     </>

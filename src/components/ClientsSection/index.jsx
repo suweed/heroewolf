@@ -15,8 +15,8 @@ export default function ClientsSection() {
 
         {/* Logo grid placeholder */}
         <div className="clients-logos">
-          {CLIENT_LOGOS.map((name) => (
-            <div key={name} className="clients-logo-slot">
+          {CLIENT_LOGOS.map((name, i) => (
+            <div key={i} className="clients-logo-slot">
               <span className="clients-logo-label">{name}</span>
             </div>
           ))}

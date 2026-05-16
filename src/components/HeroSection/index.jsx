@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import GridBackground from './GridBackground'
 import LightSphere from './LightSphere'
+import HeroGridCube from './HeroGridCube'
 
 const BADGES = [
   'Adobe Gold Partner certificado',
@@ -9,8 +10,17 @@ const BADGES = [
   'Clientes en todo LATAM',
 ]
 
-const CIRCLE_RADIUS_REST = 185  // radio del tracker circle en reposo
-const CIRCLE_RADIUS_MOVE = 165  // radio del tracker circle en movimiento
+const CIRCLE_RADIUS_REST = 185
+const CIRCLE_RADIUS_MOVE = 165
+
+// Posición final del cubo en celda (col=5, row=5 · 0-indexed)
+const CUBE_CELL = { gx: -5.074, gy: 2.112, gz: 0.255, gs: 0.232, rx: 0, ry: 0, rz: 0 }
+
+// Esfera dentro de la caja — valores confirmados
+const CUBE_SPH = { sx: 0, sy: 0, sz: 0, rox: -0.041, roy: -1.595, roz: -0.082 }
+
+// Iluminación del cubo — valores confirmados
+const CUBE_LGT = { amb: 0.383, dirX: -2.187, dirY: 2.338, dirZ: 15.000, dirI: 0.918, ptI: 1.636, emi: 0.212, iMax: 0.000 }
 
 export default function HeroSection() {
   const containerRef = useRef()
@@ -23,7 +33,9 @@ export default function HeroSection() {
       <LightSphere containerRef={containerRef} spherePosRef={spherePosRef} floatingRef={floatingRef} />
 
       {/* ── LAYER 2: Cuadrícula 3D ── */}
-      <GridBackground spherePosRef={spherePosRef} floatingRef={floatingRef} circleRadiusRest={CIRCLE_RADIUS_REST} circleRadiusMove={CIRCLE_RADIUS_MOVE} />
+      <GridBackground spherePosRef={spherePosRef} floatingRef={floatingRef} circleRadiusRest={CIRCLE_RADIUS_REST} circleRadiusMove={CIRCLE_RADIUS_MOVE}>
+        <HeroGridCube dbg={CUBE_CELL} sphDbg={CUBE_SPH} lgtDbg={CUBE_LGT} />
+      </GridBackground>
 
       {/* ── LAYER 1: Texto ── */}
       <div className="hero-text">
@@ -61,6 +73,7 @@ export default function HeroSection() {
           ))}
         </div>
       </div>
+
     </section>
   )
 }
