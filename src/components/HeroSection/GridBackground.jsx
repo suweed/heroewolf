@@ -1,6 +1,18 @@
 import { useMemo, useRef, useEffect } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { Canvas, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
+
+// 2 * tan(fov/2) * distancia = 2 * tan(30°) * 5 ≈ 5.774
+const ORTHO_TARGET_H = 2 * Math.tan(Math.PI / 6) * 5
+
+function CameraSync() {
+  const { camera, size } = useThree()
+  useEffect(() => {
+    camera.zoom = size.height / ORTHO_TARGET_H
+    camera.updateProjectionMatrix()
+  }, [camera, size.height])
+  return null
+}
 
 function makeGridTexture() {
   const cellSize = 64
@@ -23,12 +35,16 @@ function makeGridTexture() {
   tex.magFilter = THREE.NearestFilter
   tex.minFilter = THREE.NearestFilter
   tex.generateMipmaps = false
-  tex.repeat.set(40, 25)
+  tex.repeat.set(30, 19)
   return tex
 }
 
+
+const RADIUS_REST = 245
+const RADIUS_MOVE = 165
+
 const GRID_DEFAULTS = {
-  radius:      165,   // px — tamaño del círculo
+  radius:      245,   // px — tamaño del círculo (reposo)
   blurPx:       52,   // px — blur del overlay ahumado
   smokeDark:   0.73,  // 0-1 — oscuridad máxima en el centro
   transCenter: 0.48,  // 0-1 — opacidad del mask en el centro (menor = más transparente)
@@ -43,12 +59,13 @@ function GridMesh() {
   return (
     <mesh>
       <planeGeometry args={[16, 10]} />
-      <meshBasicMaterial map={texture} transparent />
+      <meshBasicMaterial map={texture} transparent depthWrite={false} />
     </mesh>
   )
 }
 
-export default function GridBackground({ spherePosRef, circleRadius = 100 }) {
+
+export default function GridBackground({ spherePosRef, floatingRef, circleRadiusRest, circleRadiusMove, children }) {
   const wrapperRef = useRef()
   const overlayRef = useRef()
   const cfgRef     = useRef(GRID_DEFAULTS)
@@ -58,6 +75,7 @@ export default function GridBackground({ spherePosRef, circleRadius = 100 }) {
     let raf
     let t = 0
     let last = performance.now()
+    let currentRadius = circleRadiusRest ?? RADIUS_REST
 
     const loop = (now) => {
       const dt = Math.min((now - last) / 1000, 0.05)
@@ -66,7 +84,11 @@ export default function GridBackground({ spherePosRef, circleRadius = 100 }) {
 
       const { x, y } = spherePosRef.current
       const c  = cfgRef.current
-      const r  = c.radius
+      const restR = circleRadiusRest ?? RADIUS_REST
+      const moveR = circleRadiusMove ?? RADIUS_MOVE
+      const targetR = (floatingRef?.current !== false) ? restR : moveR
+      currentRadius += (targetR - currentRadius) * 0.06
+      const r = currentRadius
       const sp = c.morphSpeed
 
       if (wrapperRef.current) {
@@ -104,19 +126,45 @@ export default function GridBackground({ spherePosRef, circleRadius = 100 }) {
     }
     raf = requestAnimationFrame(loop)
     return () => cancelAnimationFrame(raf)
-  }, [spherePosRef])
+  }, [spherePosRef, floatingRef])
 
   return (
     <>
       <div ref={wrapperRef} className="grid-wrapper">
         <Canvas
           className="grid-canvas"
-          camera={{ position: [0, 0, 5], fov: 60 }}
+          style={{ width: '100%', height: '100%', display: 'block' }}
+          orthographic
+          camera={{ position: [0, 0, 5], zoom: 100, near: 0.1, far: 100 }}
+          onCreated={({ camera, size }) => {
+            camera.zoom = size.height / ORTHO_TARGET_H
+            camera.updateProjectionMatrix()
+          }}
           gl={{ antialias: true, alpha: true }}
         >
+          <CameraSync />
           <GridMesh />
         </Canvas>
       </div>
+
+      {children && (
+        <div className="cube-wrapper">
+          <Canvas
+            shadows
+            style={{ width: '100%', height: '100%', display: 'block' }}
+            orthographic
+            camera={{ position: [0, 0, 5], zoom: 100, near: 0.1, far: 100 }}
+            onCreated={({ camera, size }) => {
+              camera.zoom = size.height / ORTHO_TARGET_H
+              camera.updateProjectionMatrix()
+            }}
+            gl={{ antialias: true, alpha: true }}
+          >
+            <CameraSync />
+            {children}
+          </Canvas>
+        </div>
+      )}
 
       <div ref={overlayRef} className="grid-overlay" />
     </>
