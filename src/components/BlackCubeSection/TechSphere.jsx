@@ -18,9 +18,14 @@ const LOCAL_GRAV = new THREE.Vector3(0, 0, -1)
 // Guarda la imagen en  public/images/  y ajusta el nombre aquí
 const ICON_URL   = '/images/jslogo.png'
 const BG_COLOR   = '#000000'   // color de fondo de la esfera (amarillo JS)
-const ICON_SCALE = 0.25        // el icono ocupa el 30 % del diámetro visible
+const ICON_SCALE = 0.25        // el icono ocupa el 25 % del diámetro visible (default)
 
-function buildTexture(img, bgColor = BG_COLOR) {
+function clamp01(v, fallback = ICON_SCALE) {
+  if (typeof v !== 'number' || Number.isNaN(v)) return fallback
+  return Math.min(1, Math.max(0, v))
+}
+
+function buildTexture(img, bgColor = BG_COLOR, iconWidth = ICON_SCALE, iconHeight = ICON_SCALE) {
   const S = 512
   const canvas = document.createElement('canvas')
   canvas.width = S; canvas.height = S
@@ -28,40 +33,41 @@ function buildTexture(img, bgColor = BG_COLOR) {
   ctx.fillStyle = bgColor
   ctx.fillRect(0, 0, S, S)
   if (img) {
-    const size = S * ICON_SCALE
-    const x    = (S - size) / 2
-    const y    = (S - size) / 2
-    ctx.drawImage(img, x, y, size, size)
+    const w = S * clamp01(iconWidth)
+    const h = S * clamp01(iconHeight)
+    const x = (S - w) / 2
+    const y = (S - h) / 2
+    ctx.drawImage(img, x, y, w, h)
   }
   return new THREE.CanvasTexture(canvas)
 }
 
-function useIconTexture(url = ICON_URL, bgColor = BG_COLOR) {
-  const [texture, setTexture] = useState(() => buildTexture(null, bgColor))
+function useIconTexture(url = ICON_URL, bgColor = BG_COLOR, iconWidth = ICON_SCALE, iconHeight = ICON_SCALE) {
+  const [texture, setTexture] = useState(() => buildTexture(null, bgColor, iconWidth, iconHeight))
 
   useEffect(() => {
     // Si no hay URL, solo muestra el color de fondo
     if (!url) {
-      setTexture(buildTexture(null, bgColor))
+      setTexture(buildTexture(null, bgColor, iconWidth, iconHeight))
       return
     }
     const img = new Image()
-    img.onload  = () => setTexture(buildTexture(img, bgColor))
+    img.onload  = () => setTexture(buildTexture(img, bgColor, iconWidth, iconHeight))
     img.onerror = () => console.warn('[TechSphere] imagen no encontrada:', url)
     img.src = url
-  }, [url, bgColor])
+  }, [url, bgColor, iconWidth, iconHeight])
 
   return texture
 }
 
-const TechSphere = forwardRef(function TechSphere({ isOpen, rotation = { x: 0, y: 0, z: 0 }, iconUrl, bgColor, restPos = { x: 0, y: 0, z: 0 } }, ref) {
+const TechSphere = forwardRef(function TechSphere({ isOpen, rotation = { x: 0, y: 0, z: 0 }, iconUrl, iconWidth = ICON_SCALE, iconHeight = ICON_SCALE, bgColor, restPos = { x: 0, y: 0, z: 0 } }, ref) {
   const meshRef    = useRef()
   const posRef     = useRef(new THREE.Vector3(0, 0, 0))
   const velRef     = useRef(new THREE.Vector3(0, 0, 0))
   const wasOpenRef = useRef(false)
   const isOpenRef  = useRef(isOpen)
   isOpenRef.current = isOpen
-  const texture    = useIconTexture(iconUrl, bgColor)
+  const texture    = useIconTexture(iconUrl, bgColor, iconWidth, iconHeight)
 
   // Expone kick() y getMesh() al componente padre (BlackBox)
   useImperativeHandle(ref, () => ({

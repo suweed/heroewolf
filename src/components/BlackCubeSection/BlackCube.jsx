@@ -9,6 +9,18 @@ const HALF = SIZE / 2
 // Rotación fija de la caja: tapa (y+) apuntando hacia la cámara (z+)
 const BOX_ROTATION = [-0.27, 0, 0]
 
+// Configuración de bisagra por dirección de apertura
+// hingePos : posición del pivot (borde de la cara frontal)
+// facePos  : posición del centro de la tapa relativa al pivot
+// axis     : eje de rotación de la animación ('x' | 'y')
+// target   : ángulo final al abrir (±Math.PI)
+const LID_DIR = {
+  top:    { hingePos: [0,     HALF,  HALF], facePos: [0,     -HALF, 0], axis: 'x', target: -Math.PI },
+  bottom: { hingePos: [0,    -HALF,  HALF], facePos: [0,      HALF, 0], axis: 'x', target:  Math.PI },
+  left:   { hingePos: [-HALF, 0,     HALF], facePos: [ HALF,  0,    0], axis: 'y', target: -Math.PI },
+  right:  { hingePos: [ HALF, 0,     HALF], facePos: [-HALF,  0,    0], axis: 'y', target:  Math.PI },
+}
+
 // Color del interior de la caja
 const INTERIOR_COLOR = '#f8a710'
 
@@ -42,11 +54,13 @@ function BoxFace({ position, rotation, interiorColor = INTERIOR_COLOR, boxColor 
     )
 }
 
-export default function BlackBox({ sphereRot, sphereRestPos = { x: 0, y: 0, z: 0 }, interiorColor = INTERIOR_COLOR, iconUrl, bgColor, boxRotation, boxColor = '#010101', dbg, setDbg, emissiveIntensity = 0.06, interiorLightMax = 2 }) {
-  const [open, setOpen] = useState(false)
+  export default function BlackBox({ sphereRot, sphereRestPos = { x: 0, y: 0, z: 0 }, interiorColor = INTERIOR_COLOR, iconUrl, iconWidth, iconHeight, bgColor, boxRotation, boxColor = '#010101', dbg, setDbg, emissiveIntensity = 0.06, interiorLightMax = 2, openDir = 'top', isOpen, onToggleOpen }) {
+  const [localOpen, setLocalOpen] = useState(false)
   const lidGroupRef      = useRef()
   const interiorLightRef = useRef()
   const sphereRef        = useRef()
+  const controlledOpen = typeof isOpen === 'boolean'
+  const open = controlledOpen ? isOpen : localOpen
 
   // dbg can be passed from parent to show external DebugPanel; otherwise use local state
   const defaultDbg = {
@@ -63,10 +77,10 @@ export default function BlackBox({ sphereRot, sphereRestPos = { x: 0, y: 0, z: 0
 
   useFrame(() => {
     if (!lidGroupRef.current) return
-    const target = open ? -Math.PI : 0
-    lidGroupRef.current.rotation.x = THREE.MathUtils.lerp(
-      lidGroupRef.current.rotation.x,
-      target,
+    const { axis, target: openTarget } = LID_DIR[openDir] ?? LID_DIR.top
+    lidGroupRef.current.rotation[axis] = THREE.MathUtils.lerp(
+      lidGroupRef.current.rotation[axis],
+      open ? openTarget : 0,
       0.07
     )
     if (interiorLightRef.current) {
@@ -87,12 +101,16 @@ export default function BlackBox({ sphereRot, sphereRestPos = { x: 0, y: 0, z: 0
       scale={[dbgState.sx, dbgState.sy, dbgState.sz]}
       onClick={(e) => {
         e.stopPropagation()
-        setOpen((o) => !o)
+        if (onToggleOpen) {
+          onToggleOpen()
+          return
+        }
+        if (!controlledOpen) setLocalOpen((o) => !o)
       }}
       onPointerOver={() => { document.body.style.cursor = 'pointer' }}
       onPointerOut={() => { document.body.style.cursor = 'auto' }}
     >
-      {/* Luz interior suave — se enciende al abrir */}
+      {/* Luz interior suave — se enciende al abrir/cerrar */}
       <pointLight ref={interiorLightRef} position={[0, 0, 0]} intensity={0} color={interiorColor} distance={5} castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024} shadow-bias={-0.0005} />
 
       {/* Cara trasera */}
@@ -107,16 +125,13 @@ export default function BlackBox({ sphereRot, sphereRestPos = { x: 0, y: 0, z: 0
       {/* Cara derecha */}
       <BoxFace position={[HALF, 0, 0]} rotation={[0, Math.PI / 2, 0]} interiorColor={interiorColor} boxColor={dbgState.boxColor} emissiveIntensity={emissiveIntensity} />
 
-      {/* Tapa frontal — bisagra en el borde superior de la cara frontal (eje X) */}
-      {/* El grupo está situado en el borde superior de la cara frontal: [0, HALF, HALF].
-          La cara se coloca con su centro desplazado hacia abajo (-HALF) respecto a la bisagra,
-          de modo que la rotación en X abra la tapa hacia arriba. */}
-      <group ref={lidGroupRef} position={[0, HALF, HALF]}>
-        <BoxFace position={[0, -HALF, 0]} rotation={[0, 0, 0]} interiorColor={interiorColor} boxColor={dbgState.boxColor} flipInterior={false} emissiveIntensity={emissiveIntensity} />
+      {/* Tapa frontal — bisagra configurable según openDir ('top'|'bottom'|'left'|'right') */}
+      <group ref={lidGroupRef} position={LID_DIR[openDir]?.hingePos ?? LID_DIR.top.hingePos}>
+        <BoxFace position={LID_DIR[openDir]?.facePos ?? LID_DIR.top.facePos} rotation={[0, 0, 0]} interiorColor={interiorColor} boxColor={dbgState.boxColor} flipInterior={false} emissiveIntensity={emissiveIntensity} />
       </group>
 
       {/* Esfera de tecnologías — 70% del interior de la caja */}
-      <TechSphere ref={sphereRef} isOpen={open} rotation={sphereRot} restPos={sphereRestPos} iconUrl={iconUrl} bgColor={bgColor} />
+      <TechSphere ref={sphereRef} isOpen={open} rotation={sphereRot} restPos={sphereRestPos} iconUrl={iconUrl} iconWidth={iconWidth} iconHeight={iconHeight} bgColor={bgColor} />
     </group>
     </>
   )

@@ -1,64 +1,82 @@
-import { useRef, useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useThree } from '@react-three/fiber'
 import BlackBox from '../BlackCubeSection/BlackCube'
 
-// lgtDbg: { amb, dirX, dirY, dirZ, dirI, ptI, emi, iMax }
-// dirX/Y/Z son factores de offset en unidades de escala del cubo (se multiplican por gs)
-const LGT_DEFAULT = { amb: 0.22, dirX: 5, dirY: 7, dirZ: 5, dirI: 1.1, ptI: 0.9, emi: 0.06, iMax: 2 }
+const LGT_DEFAULT = {
+  amb: 0.22,
+  dirX: 2.5,
+  dirY: 3.5,
+  dirZ: 2.5,
+  dirI: 1.1,
+  ptI: 0.9,
+  emi: 0.06,
+  iMax: 2,
+}
 
-// Luces en world space para que las sombras y el shading no se vean afectados por el scale del cubo
-function SceneLights({ gx, gy, gz, gs, lgtDbg }) {
-  const lightRef = useRef()
+function SceneLights({ gx, gy, gz, gs, lgt }) {
+  const spotRef = useRef()
   const { scene } = useThree()
 
-  const lx = gx + lgtDbg.dirX * gs
-  const ly = gy + lgtDbg.dirY * gs
-  const lz = gz + lgtDbg.dirZ * gs
-  const frustum = gs * 1.8  // cubre la caja (SIZE=2.2 * gs) con margen
+  const lx = gx + lgt.dirX * gs
+  const ly = gy + lgt.dirY * gs
+  const lz = gz + lgt.dirZ * gs
 
   useEffect(() => {
-    const light = lightRef.current
-    if (!light) return
-    light.target.position.set(gx, gy, gz)
-    scene.add(light.target)
-    light.target.updateMatrixWorld()
-    return () => { scene.remove(light.target) }
+    const spot = spotRef.current
+    if (!spot) return
+    spot.target.position.set(gx, gy, gz)
+    scene.add(spot.target)
+    spot.target.updateMatrixWorld()
+    return () => { scene.remove(spot.target) }
   }, [gx, gy, gz, scene])
 
   return (
     <>
-      <ambientLight intensity={lgtDbg.amb} />
-      <directionalLight
-        ref={lightRef}
+      {/* Fill local para no aplanar toda la escena */}
+      <pointLight
+        position={[gx + 4 * gs, gy + 4 * gs, gz + 6 * gs]}
+        intensity={lgt.ptI}
+        distance={30 * gs}
+      />
+
+      {/* Luz direccional local mediante spot apuntando a la caja */}
+      <spotLight
+        ref={spotRef}
         position={[lx, ly, lz]}
-        intensity={lgtDbg.dirI}
+        intensity={lgt.dirI}
+        angle={0.55}
+        penumbra={0.35}
+        distance={40 * gs}
         castShadow
         shadow-mapSize-width={1024}
         shadow-mapSize-height={1024}
-        shadow-camera-near={0.01}
-        shadow-camera-far={gs * 30}
-        shadow-camera-left={-frustum}
-        shadow-camera-right={frustum}
-        shadow-camera-top={frustum}
-        shadow-camera-bottom={-frustum}
+        shadow-camera-near={0.05}
+        shadow-camera-far={60 * gs}
         shadow-bias={-0.0008}
       />
+
+      {/* Relleno tenue equivalente al ambient del componente original */}
       <pointLight
-        position={[gx - 4 * gs, gy - 4 * gs, gz + 4 * gs]}
-        intensity={lgtDbg.ptI}
-        color="#ffffff"
+        position={[gx - 2 * gs, gy - 2 * gs, gz + 4 * gs]}
+        intensity={lgt.amb}
+        distance={20 * gs}
       />
     </>
   )
 }
 
-// dbg     = { gx, gy, gz, gs, rx, ry, rz }                   — posición/rotación del grupo en el grid
-// sphDbg  = { sx, sy, sz, rox, roy, roz }                     — posición de reposo y rotación de la esfera
-// lgtDbg  = { amb, dirX, dirY, dirZ, dirI, ptI, emi, iMax }   — intensidades de luz / sombras
 export default function HeroGridCube({
   dbg,
   sphDbg = { sx: 0, sy: 0, sz: 0, rox: 0, roy: 0, roz: 0 },
   lgtDbg = LGT_DEFAULT,
+  interiorColor,
+  sphereBgColor,
+  iconUrl,
+  iconWidth,
+  iconHeight,
+  openDir = 'top',
+  isOpen,
+  onToggleOpen,
 }) {
   const { gx, gy, gz, gs, rx, ry, rz } = dbg
   const boxDbg = {
@@ -70,14 +88,22 @@ export default function HeroGridCube({
 
   return (
     <>
-      <SceneLights gx={gx} gy={gy} gz={gz} gs={gs} lgtDbg={lgtDbg} />
+      <SceneLights gx={gx} gy={gy} gz={gz} gs={gs} lgt={lgtDbg} />
       <group position={[gx, gy, gz]} scale={gs}>
         <BlackBox
           dbg={boxDbg}
           sphereRot={{ x: sphDbg.rox, y: sphDbg.roy, z: sphDbg.roz }}
           sphereRestPos={{ x: sphDbg.sx, y: sphDbg.sy, z: sphDbg.sz }}
+          interiorColor={interiorColor}
+          bgColor={sphereBgColor}
+          iconUrl={iconUrl}
+          iconWidth={iconWidth}
+          iconHeight={iconHeight}
           emissiveIntensity={lgtDbg.emi}
           interiorLightMax={lgtDbg.iMax}
+          openDir={openDir}
+          isOpen={isOpen}
+          onToggleOpen={onToggleOpen}
         />
       </group>
     </>
