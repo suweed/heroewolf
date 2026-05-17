@@ -32,14 +32,11 @@ function SceneLights({ gx, gy, gz, gs, lgt }) {
 
   return (
     <>
-      {/* Fill local para no aplanar toda la escena */}
       <pointLight
         position={[gx + 4 * gs, gy + 4 * gs, gz + 6 * gs]}
         intensity={lgt.ptI}
         distance={30 * gs}
       />
-
-      {/* Luz direccional local mediante spot apuntando a la caja */}
       <spotLight
         ref={spotRef}
         position={[lx, ly, lz]}
@@ -54,8 +51,6 @@ function SceneLights({ gx, gy, gz, gs, lgt }) {
         shadow-camera-far={60 * gs}
         shadow-bias={-0.0008}
       />
-
-      {/* Relleno tenue equivalente al ambient del componente original */}
       <pointLight
         position={[gx - 2 * gs, gy - 2 * gs, gz + 4 * gs]}
         intensity={lgt.amb}

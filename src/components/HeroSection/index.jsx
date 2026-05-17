@@ -189,8 +189,6 @@ export default function HeroSection() {
   function toggleManualOpen(key) {
     setManualOpenMap(prev => {
       const next = { ...prev }
-      // Si está abierta manualmente, ciérrala (elimina del map)
-      // Si no está en el map, abre manualmente
       if (next[key]) {
         delete next[key]
       } else {
@@ -225,6 +223,7 @@ export default function HeroSection() {
         ))}
       </GridBackground>
 
+      {/* ── LAYER 1: Texto y botones (HTML/CSS) ── */}
       <div className="hero-text">
         <p className="hero-eyebrow">
           Adobe Experience Cloud Partner · México
@@ -260,7 +259,6 @@ export default function HeroSection() {
           ))}
         </div>
       </div>
-
     </section>
   )
 }

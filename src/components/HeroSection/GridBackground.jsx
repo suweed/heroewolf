@@ -2,11 +2,9 @@ import { useMemo, useRef, useEffect } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 
-// Altura visible (en unidades Three.js) equivalente a la perspectiva anterior:
 // 2 * tan(fov/2) * distancia = 2 * tan(30°) * 5 ≈ 5.774
 const ORTHO_TARGET_H = 2 * Math.tan(Math.PI / 6) * 5
 
-// Sincroniza el zoom de la cámara ortográfica con el tamaño del canvas
 function CameraSync() {
   const { camera, size } = useThree()
   useEffect(() => {
@@ -149,7 +147,6 @@ export default function GridBackground({ spherePosRef, floatingRef, circleRadius
         </Canvas>
       </div>
 
-      {/* Cubo en canvas separado: sin máscara, por encima de sphere y smoke overlay */}
       {children && (
         <div className="cube-wrapper">
           <Canvas

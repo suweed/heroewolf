@@ -11,14 +11,11 @@ const DAMPING      = 0.982
 const CLICK_SPEED  = 5.0
 const OPEN_IMPACT_SPEED = 3.0
 
-// Con BOX_ROTATION=[1.33,3.14,0] la gravedad visual apunta al eje local -Z
 const LOCAL_GRAV = new THREE.Vector3(0, 0, -1)
 
-// ── Textura del icono ──────────────────────────────────────────────────────
-// Guarda la imagen en  public/images/  y ajusta el nombre aquí
 const ICON_URL   = '/images/jslogo.png'
-const BG_COLOR   = '#000000'   // color de fondo de la esfera (amarillo JS)
-const ICON_SCALE = 0.25        // el icono ocupa el 25 % del diámetro visible (default)
+const BG_COLOR   = '#000000'
+const ICON_SCALE = 0.25
 
 function clamp01(v, fallback = ICON_SCALE) {
   if (typeof v !== 'number' || Number.isNaN(v)) return fallback
@@ -69,14 +66,13 @@ const TechSphere = forwardRef(function TechSphere({ isOpen, rotation = { x: 0, y
   isOpenRef.current = isOpen
   const texture    = useIconTexture(iconUrl, bgColor, iconWidth, iconHeight)
 
-  // Expone kick() y getMesh() al componente padre (BlackBox)
   useImperativeHandle(ref, () => ({
     kick() {
       if (!isOpenRef.current) return
       velRef.current.set(
         -(Math.random() - 0.5) * CLICK_SPEED * 2,
         -(Math.random() - 0.5) * CLICK_SPEED * 2,
-        +(Math.random() * CLICK_SPEED + 1.5)  // impulso hacia arriba (opuesto al suelo -Z)
+        +(Math.random() * CLICK_SPEED + 1.5)  // impulso hacia arriba
       )
     },
     getMesh() { return meshRef.current }
@@ -85,7 +81,6 @@ const TechSphere = forwardRef(function TechSphere({ isOpen, rotation = { x: 0, y
   useFrame((_, delta) => {
     if (!meshRef.current) return
 
-    // Al abrir: soltar desde arriba (z=+BOUNDS = techo local, opuesto al suelo)
     if (isOpen && !wasOpenRef.current) {
       posRef.current.set(
         (Math.random() - 0.5) * 0.1,
@@ -107,7 +102,6 @@ const TechSphere = forwardRef(function TechSphere({ isOpen, rotation = { x: 0, y
       return
     }
 
-    // Gravedad en dirección local +Z (suelo visual)
     velRef.current.addScaledVector(LOCAL_GRAV, GRAVITY_MAG * delta)
     velRef.current.multiplyScalar(DAMPING)
 
@@ -134,7 +128,7 @@ const TechSphere = forwardRef(function TechSphere({ isOpen, rotation = { x: 0, y
       rotation={[rotation.x, rotation.y, rotation.z]}
       onClick={(e) => {
         if (!isOpenRef.current) return
-        e.stopPropagation()  // evita que el grupo del box también reciba el click
+        e.stopPropagation()
         velRef.current.set(
           -(Math.random() - 0.5) * CLICK_SPEED * 2,
           -(Math.random() - 0.5) * CLICK_SPEED * 2,

@@ -5,8 +5,6 @@ import TechSphere from './TechSphere'
 
 const SIZE = 2.2
 const HALF = SIZE / 2
-
-// Rotación fija de la caja: tapa (y+) apuntando hacia la cámara (z+)
 const BOX_ROTATION = [-0.27, 0, 0]
 
 // Configuración de bisagra por dirección de apertura
@@ -27,7 +25,6 @@ const INTERIOR_COLOR = '#f8a710'
 function BoxFace({ position, rotation, interiorColor = INTERIOR_COLOR, boxColor = '#010101', flipInterior = true, emissiveIntensity = 0.06 }) {
   return (
     <group position={position} rotation={rotation}>
-      {/* Cara exterior */}
       <mesh position={[0, 0, 0.001]} castShadow receiveShadow>
         <planeGeometry args={[SIZE, SIZE]} />
         <meshStandardMaterial
@@ -37,8 +34,6 @@ function BoxFace({ position, rotation, interiorColor = INTERIOR_COLOR, boxColor 
           side={THREE.FrontSide}
         />
       </mesh>
-      {/* Cara interior — BackSide para normales correctas hacia adentro */}
-      {/* Interior: rotamos la geometría 180° para asegurar que mira siempre hacia el interior */}
       <mesh position={[0, 0, -0.001]} rotation={flipInterior ? [Math.PI, 0, 0] : [0, 0, 0]} castShadow receiveShadow>
         <planeGeometry args={[SIZE, SIZE]} />
         <meshStandardMaterial
@@ -62,7 +57,6 @@ function BoxFace({ position, rotation, interiorColor = INTERIOR_COLOR, boxColor 
   const controlledOpen = typeof isOpen === 'boolean'
   const open = controlledOpen ? isOpen : localOpen
 
-  // dbg can be passed from parent to show external DebugPanel; otherwise use local state
   const defaultDbg = {
     rx: boxRotation?.[0] ?? BOX_ROTATION[0],
     ry: boxRotation?.[1] ?? BOX_ROTATION[1],
@@ -110,7 +104,6 @@ function BoxFace({ position, rotation, interiorColor = INTERIOR_COLOR, boxColor 
       onPointerOver={() => { document.body.style.cursor = 'pointer' }}
       onPointerOut={() => { document.body.style.cursor = 'auto' }}
     >
-      {/* Luz interior suave — se enciende al abrir/cerrar */}
       <pointLight ref={interiorLightRef} position={[0, 0, 0]} intensity={0} color={interiorColor} distance={5} castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024} shadow-bias={-0.0005} />
 
       {/* Cara trasera */}
@@ -119,7 +112,7 @@ function BoxFace({ position, rotation, interiorColor = INTERIOR_COLOR, boxColor 
       <BoxFace position={[0, -HALF, 0]} rotation={[Math.PI / 2, 0, 0]} interiorColor={interiorColor} boxColor={dbgState.boxColor} emissiveIntensity={emissiveIntensity} />
       {/* Cara superior */}
       <BoxFace position={[0, HALF, 0]} rotation={[-Math.PI / 2, 0, 0]} interiorColor={interiorColor} boxColor={dbgState.boxColor} emissiveIntensity={emissiveIntensity} />
-      {/* (La cara frontal ahora será la tapa; la añadimos como grupo con bisagra abajo) */}
+      {/* (La cara frontal ahora será la tapa */}
       {/* Cara izquierda */}
       <BoxFace position={[-HALF, 0, 0]} rotation={[0, -Math.PI / 2, 0]} interiorColor={interiorColor} boxColor={dbgState.boxColor} emissiveIntensity={emissiveIntensity} />
       {/* Cara derecha */}
