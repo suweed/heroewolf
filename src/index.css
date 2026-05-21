@@ -400,78 +400,54 @@ body,
 
 .black-cube-canvas-wrapper {
   width: 100%;
-  max-width: 500px;
-  height: 500px;
+  max-width: 1000px;
+  height: 80vh;
+  min-height: 700px;
   position: relative;
 }
 
-/* ── Debug panel ───────────────────────────────────────────── */
-.debug-panel {
+.black-cube-canvas-wrapper canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+.cube-tooltip {
   position: absolute;
-  bottom: 12px;
-  left: 12px;
-  background: rgba(0, 0, 0, 0.75);
-  border: 1px solid #333;
-  border-radius: 8px;
-  padding: 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 200px;
-  font-family: 'Inter', monospace;
-  backdrop-filter: blur(6px);
-}
-
-.debug-title {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  color: #dc2626;
-  text-transform: uppercase;
-  margin-bottom: 2px;
-}
-
-.debug-subtitle {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.10em;
-  color: #555;
-  text-transform: uppercase;
-  margin-top: 4px;
-  margin-bottom: 0;
-}
-
-.debug-label {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  font-size: 11px;
+  z-index: 10;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  color: #ffffff;
+  font-size: 13px;
   font-weight: 600;
-  color: #aaaaaa;
+  letter-spacing: 0.03em;
+  pointer-events: none;
+  user-select: none;
+  animation: floatTooltip 2.5s ease-in-out infinite;
 }
 
-.debug-label input[type='range'] {
-  width: 100%;
-  accent-color: #dc2626;
-  cursor: pointer;
+.cube-tooltip.drag {
+  top: 20%;
+  left: 30%;
 }
 
-.debug-reset {
-  margin-top: 2px;
-  background: #1a1a1a;
-  border: 1px solid #444;
-  color: #888;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-family: inherit;
-  transition: border-color 0.2s, color 0.2s;
-  align-self: flex-start;
+.cube-tooltip.click {
+  top: 65%;
+  right: 30%;
 }
 
-.debug-reset:hover {
-  border-color: #dc2626;
-  color: #dc2626;
+@keyframes floatTooltip {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
 }
